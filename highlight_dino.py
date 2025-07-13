@@ -1,17 +1,24 @@
 import numpy as np
 import trimesh
 from sklearn.metrics.pairwise import cosine_similarity
+import os
 
 # --- Configuration ---
-PLY_FILE = 'bude_cloud.ply'
-FEATURES_FILE = 'bude_cloud_dino_features.npy'
+PLY_FILE = 'output/images.ply'
+FEATURES_FILE = 'output/images_dino_features.npy'
 OUTPUT_VALIDATION_FILE = 'validation_cloud.ply'
 
 # Index of the point you want to test.
 QUERY_POINT_INDEX = 75313
 
-# Number of similar points to find and highlight.
 TOP_K = 7000
+
+output_folder = "output"
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
+    print(f"📁 Created output directory: {output_folder}")
+OUTPUT_VALIDATION_FILE = os.path.join(output_folder, "dino_validation_cloud.ply")
+
 
 # --- Main Script ---
 print("Loading data...")

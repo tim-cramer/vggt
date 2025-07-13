@@ -219,6 +219,18 @@ def save_point_cloud(points, colors, filename):
     print(f"✅ Point cloud saved successfully to {filename}")
 
 def run_vggt_and_create_feature_cloud(args):
+    # --- Setup Output Directory ---
+    output_folder = "output"
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+        print(f"📁 Created output directory: {output_folder}")
+
+    # Determine a base name for output files from the image folder
+    base_name = os.path.basename(os.path.normpath(args.image_folder))
+    output_ply_path = os.path.join(output_folder, f"{base_name}.ply")
+    output_dino_npy = os.path.join(output_folder, f"{base_name}_dino_features.npy")
+    output_clip_npy = os.path.join(output_folder, f"{base_name}_clip_features.npy")
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
     dtype = torch.bfloat16 if device == "cuda" and torch.cuda.get_device_capability()[0] >= 8 else torch.float16
 
@@ -251,7 +263,7 @@ def run_vggt_and_create_feature_cloud(args):
 
     # --- Feature Extraction Steps ---
     dino_features = extract_dino_features(image_paths, H, W, device, batch_size=args.dino_batch_size)
-    clip_features = extract_clip_features(image_paths, H, W, device, batch_size=args.feature_batch_size)
+    clip_features = extract_clip_features(image_paths, H, W, device, batch_size=args.clip_batch_size)
 
     # --- Data Processing and Filtering ---
     points_flat = world_points.reshape(-1, 3)
@@ -286,10 +298,8 @@ def run_vggt_and_create_feature_cloud(args):
 
     # --- Save Outputs Separately ---
     print("💾 Saving final outputs...")
-    output_dino_npy = args.output_ply.replace(".ply", "_dino_features.npy")
-    output_clip_npy = args.output_ply.replace(".ply", "_clip_features.npy")
     
-    save_point_cloud(agg_points, agg_colors, args.output_ply)
+    save_point_cloud(agg_points, agg_colors, output_ply_path)
     
     np.save(output_dino_npy, agg_features_dict['dino'])
     print(f"✅ DINO features saved to {output_dino_npy}")
@@ -302,11 +312,10 @@ def run_vggt_and_create_feature_cloud(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate a colored point cloud with DINOv2 and CLIP (SAM-blended) features using VGGT.")
     parser.add_argument("--image_folder", type=str, required=True, help="Folder containing input images.")
-    parser.add_argument("--output_ply", type=str, required=True, help="Path to save the output .ply point cloud.")
     parser.add_argument("--conf_percentile", type=float, default=20.0, help="Filter out points below this confidence percentile (0-100).")
     parser.add_argument("--voxel_size", type=float, default=0.01, help="Voxel size for point cloud aggregation. Set to 0 to disable.")
     parser.add_argument("--dino_batch_size", type=int, default=4, help="Batch size for DINOv2 feature extraction.")
-    parser.add_argument("--feature_batch_size", type=int, default=1, help="Batch size for CLIP feature extraction (recommend keeping at 1).")
+    parser.add_argument("--clip_batch_size", type=int, default=1, help="Batch size for CLIP feature extraction (recommend keeping at 1).")
     
     args = parser.parse_args()
     run_vggt_and_create_feature_cloud(args)

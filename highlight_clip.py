@@ -3,16 +3,23 @@ import trimesh
 from sklearn.metrics.pairwise import cosine_similarity
 import torch
 import clip
+import os
 
 # --- Configuration ---
-PLY_FILE = 'bude_cloud.ply'
+PLY_FILE = 'output/images.ply'
 
-FEATURES_FILE = 'bude_cloud_clip_features.npy'
-OUTPUT_VALIDATION_FILE = 'text_query_visualization.ply'
+FEATURES_FILE = 'output/images_clip_features.npy'
 
 TEXT_QUERY = "bed"
 
 TOP_K = 5000
+
+output_folder = "output"
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
+    print(f"📁 Created output directory: {output_folder}")
+OUTPUT_VALIDATION_FILE = os.path.join(output_folder, "clip_validation_cloud.ply")
+
 
 # --- Main Script ---
 # Load a pre-trained CLIP model

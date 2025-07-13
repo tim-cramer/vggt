@@ -36,7 +36,6 @@ def _download_file(url, destination):
 def extract_dino_features(image_paths, target_height, target_width, device, batch_size=4):
     """Extracts dense DINOv2 feature maps for a list of images in batches."""
     print("🦖 Initializing DINOv2 model...")
-    # Suppress verbose output from torch.hub.load
     dinov2_model = torch.hub.load('facebookresearch/dinov2', 'dinov2_vits14', verbose=False).to(device).eval()
 
     dino_transforms = transforms.Compose([
@@ -275,7 +274,7 @@ def run_vggt_and_create_feature_cloud(args):
         
     print(f"✅ Filtering complete. Final point count: {len(filtered_points)}")
 
-    # --- Voxel Aggregation (if enabled) ---
+    # --- Voxel Aggregation ---
     if args.voxel_size > 0:
         features_dict_unaggregated = {'dino': filtered_dino_features, 'clip': filtered_clip_features}
         agg_points, agg_colors, agg_features_dict = aggregate_points_and_features(
